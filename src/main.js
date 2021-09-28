@@ -1,5 +1,5 @@
-import { createApp } from 'vue'
-import App from './App.vue'
+import { createApp } from 'vue';
+import App from './App.vue';
 import router from './router';
 
 import { IonicVue } from '@ionic/vue';
@@ -21,12 +21,27 @@ import '@ionic/vue/css/flex-utils.css';
 import '@ionic/vue/css/display.css';
 
 /* Theme variables */
-import './theme/variables.css';
+import './theme/variables.scss';
 
 const app = createApp(App)
   .use(IonicVue)
   .use(router);
+
+router.beforeEach((to, from, next) => {
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (typeof localStorage.mycoordinates === "undefined") {
+      next({
+        name: 'CheckLocation'
+      })
+    } else {
+      next()
+    }
+  } else {
+    next()
+  }
+});
   
 router.isReady().then(() => {
   app.mount('#app');
 });
+
