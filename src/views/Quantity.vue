@@ -1,103 +1,109 @@
 <template>
-    <ion-content>
-        <ion-grid>
-            <ion-row>
-                <ion-col size="3">
-                    <div class="quantityinput">
-                        <ion-input type="number" v-model="ProductQuantity" debounce="1000" @ionChange="UpdateQuantity()" readonly></ion-input>
-                    </div>
-                </ion-col>
-                <ion-col size="3">
-                    <div class="ion-text-center" @click="MinusQuantity()">
-                        <ion-icon :icon="removeOutline" color="primary"></ion-icon>
-                    </div>
-                </ion-col>
-                <ion-col size="3">
-                    <div class="ion-text-center" @click="AddQuantity()">
-                        <ion-icon :icon="addOutline" color="primary"></ion-icon>
-                    </div>
-                </ion-col>
-                <ion-col size="3">
-                    <div class="ion-text-center" @click="RemoveProduct()">
-                        <ion-icon :icon="trashOutline" color="primary"></ion-icon>
-                    </div>
-                </ion-col>
-            </ion-row>
-        </ion-grid>
-    </ion-content>
+  <ion-content>
+    <ion-grid>
+      <ion-row>
+        <ion-col size="3">
+          <div class="quantityinput">
+            <ion-input
+              type="number"
+              v-model="ProductQuantity"
+              debounce="1250"
+              @ionChange="UpdateQuantity()"
+              readonly
+            ></ion-input>
+          </div>
+        </ion-col>
+        <ion-col size="3">
+          <div class="ion-text-center" @click="MinusQuantity()">
+            <ion-icon :icon="removeOutline" color="primary"></ion-icon>
+          </div>
+        </ion-col>
+        <ion-col size="3">
+          <div class="ion-text-center" @click="AddQuantity()">
+            <ion-icon :icon="addOutline" color="primary"></ion-icon>
+          </div>
+        </ion-col>
+        <ion-col size="3">
+          <div class="ion-text-center" @click="RemoveProduct()">
+            <ion-icon :icon="trashOutline" color="primary"></ion-icon>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-content>
 </template>
 
 <script>
-import { IonContent, IonIcon, IonInput, popoverController } from "@ionic/vue";
-import { trashOutline, addOutline, removeOutline } from "ionicons/icons";
-import Global from "../components/Global";
-import axios from "axios";
+import { IonContent, IonIcon, IonInput, popoverController } from '@ionic/vue';
+import { trashOutline, addOutline, removeOutline } from 'ionicons/icons';
 
-export default({
-    components: { 
-        IonContent,
-        IonIcon,
-        IonInput
+export default {
+  components: {
+    IonContent,
+    IonIcon,
+    IonInput,
+  },
+  props: {
+    product: String,
+  },
+  setup() {
+    return {
+      trashOutline,
+      addOutline,
+      removeOutline,
+    };
+  },
+  data() {
+    return {
+      CartID: JSON.parse(this.product).id,
+      ActualProductQuantity: JSON.parse(this.product).quantity,
+      ProductQuantity: JSON.parse(this.product).quantity,
+      Timer: null,
+    };
+  },
+  methods: {
+    AddQuantity() {
+      if (this.ProductQuantity <= 98) {
+        this.ProductQuantity++;
+      }
     },
-    props: {
-        product: String,
+    MinusQuantity() {
+      if (this.ProductQuantity >= 2) {
+        this.ProductQuantity--;
+      }
     },
-    setup() {
-        return {
-            trashOutline,
-            addOutline,
-            removeOutline
+    UpdateQuantity() {
+      if (this.ProductQuantity != this.ActualProductQuantity) {
+        if (typeof localStorage.carts !== 'undefined') {
+          let carts = JSON.parse(localStorage.carts);
+          let cartItem = carts.find((x) => x.id == this.CartID);
+          cartItem.quantity = this.ProductQuantity;
+          localStorage.setItem('carts', JSON.stringify(carts));
         }
+        popoverController.dismiss({
+          status: 'success',
+        });
+      }
     },
-    data() {
-        return {
-            CartID: JSON.parse(this.product).id,
-            ActualProductQuantity: JSON.parse(this.product).quantity,
-            ProductQuantity: JSON.parse(this.product).quantity,
-            Timer: null
-        }
+    RemoveProduct() {
+      if (typeof localStorage.carts !== 'undefined') {
+        let carts = JSON.parse(localStorage.carts);
+        carts = carts.filter((x) => x.id != this.CartID);
+        localStorage.setItem('carts', JSON.stringify(carts));
+      }
+      popoverController.dismiss({
+        status: 'success',
+      });
     },
-    methods: {
-        AddQuantity() {
-            if (this.ProductQuantity <= 98) {
-                this.ProductQuantity++;
-            }
-        },
-        MinusQuantity() {
-            if (this.ProductQuantity >= 2) {
-                this.ProductQuantity--;
-            }
-        },
-        UpdateQuantity() {
-            if (this.ProductQuantity != this.ActualProductQuantity) {
-                axios.post(Global.methods.GetURL() + "/cart_update", {
-                    cartid: this.CartID,
-                    quantity: this.ProductQuantity
-                }).then(() => {
-                    popoverController.dismiss({
-                        status: "success"
-                    });
-                }); 
-            }
-        },
-        RemoveProduct() {
-            axios.post(Global.methods.GetURL() + "/cart_remove", {
-                cartid: this.CartID,
-            }).then(() => {
-                popoverController.dismiss({
-                    status: "success"
-                });
-            }); 
-        }
-    }
-});
+  },
+};
 </script>
 
 <style scoped>
-    ion-col div {
-        font-size: 24px;
-    }
-    ion-col {
-        padding: 9px 5px 5px 5px !important;
-    }
+ion-col div {
+  font-size: 24px;
+}
+ion-col {
+  padding: 9px 5px 5px 5px !important;
+}
 </style>

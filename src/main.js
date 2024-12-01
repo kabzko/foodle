@@ -23,25 +23,31 @@ import '@ionic/vue/css/display.css';
 /* Theme variables */
 import './theme/variables.scss';
 
+import { stores, favourites, products, carts, orders } from './initialDatas';
+
 const app = createApp(App)
   .use(IonicVue)
   .use(router);
 
 router.beforeEach((to, from, next) => {
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (typeof localStorage.mycoordinates === "undefined") {
-      next({
-        name: 'CheckLocation'
-      })
-    } else {
-      next()
-    }
+  localStorage.setItem('stores', JSON.stringify(stores));
+  localStorage.setItem('products', JSON.stringify(products));
+  if (typeof localStorage.orders === 'undefined') {
+    localStorage.setItem('orders', JSON.stringify(orders));
+  }
+  if (typeof localStorage.carts === 'undefined') {
+    localStorage.setItem('carts', JSON.stringify(carts));
+  }
+  if (typeof localStorage.favourites === 'undefined') {
+    localStorage.setItem('favourites', JSON.stringify(favourites));
+  }
+  if (to.matched.some((record) => record.meta.requiresAuth)) {
+    next();
   } else {
-    next()
+    next();
   }
 });
-  
+
 router.isReady().then(() => {
   app.mount('#app');
 });
-
